@@ -2,6 +2,10 @@
 
 from grab.spider import Spider, Task
 import logging
+import os
+
+def image_path(url):
+    return 'images/%s' % url.split('/')[-1]
 
 class MemSpider(Spider):
 
@@ -19,12 +23,16 @@ class MemSpider(Spider):
     	yield Task('initial', url=append_url)
 
     	for image in image_url:
-    		yield Task('img', url=image)
-    def task_img(self, grab, task):
-    	file = task.url.split('/')[-1]
-    	grab.response.save('images/%s' % file)
+            file = image_path(image)
+            if not os.path.exists(file):
+                yield Task('img', url=image)
+            else:
+                logging.debug('Image already save')
 
-	
+    def task_img(self, grab, task):
+    	file = image_path(task.url)
+        grab.response.save(file) 
+        
 
 if __name__ == '__main__':
 		logging.basicConfig(level=logging.DEBUG)
